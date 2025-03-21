@@ -17,4 +17,4 @@ We address the complex challenge of riddle-solving with large language models (L
 
 ## Read the Full Paper:
 
-For a detailed explanation of our approach and findings, check out our paper [**here**](https://arxiv.org/pdf/2409.16383).
+For a detailed explanation of our approach and findings, check out our paper [**here**]([https://arxiv.org/pdf/2409.16383](https://aclanthology.org/2025.coling-main.633.pdf)).
