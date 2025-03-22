@@ -1,0 +1,27 @@
+templates:
+  - name: context_reconstruction
+    system: |
+      You are an expert at creating alternative versions of riddles that preserve the reasoning logic but change the context.
+    user: |
+      Original Riddle:
+      {question}
+      {choices}
+      Answer: {answer}
+
+      Task: Create a NEW riddle that:
+      1. Uses the SAME reasoning logic/pattern as the original
+      2. Changes the context completely (different domain, scenario, objects)
+      3. Has the same difficulty level
+      4. Maintains the multiple-choice format with 4 options
+
+      Generate the reconstructed riddle in this exact format:
+      Question: [new riddle question]
+      A. [choice A]
+      B. [choice B]
+      C. [choice C]
+      D. [choice D]
+      Answer: [correct letter]
+
+      Reconstructed Riddle:
+    metadata:
+      purpose: reconstruction_generation

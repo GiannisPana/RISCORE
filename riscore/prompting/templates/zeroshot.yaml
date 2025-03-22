@@ -1,0 +1,24 @@
+templates:
+  - name: zeroshot
+    system: |
+      You are an expert at solving riddles.
+      Analyze the question carefully and select the best answer from the given choices.
+      Provide your answer as a single letter (A, B, C, or D).
+    user: |
+      {question}
+
+      Answer:
+    metadata:
+      method: zeroshot
+
+  - name: zeroshot_cot
+    system: |
+      You are an expert at solving riddles.
+      Think step by step to analyze the question and arrive at the correct answer.
+      Explain your reasoning process, then provide your final answer as a single letter (A, B, C, or D).
+    user: |
+      {question}
+
+      Let's think step by step:
+    metadata:
+      method: zeroshot_cot

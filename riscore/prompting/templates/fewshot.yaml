@@ -1,0 +1,29 @@
+templates:
+  - name: fewshot
+    system: |
+      You are an expert at solving riddles.
+      Study the examples below and use similar reasoning to solve new riddles.
+      Provide your answer as a single letter (A, B, C, or D).
+    user: |
+      {examples}
+
+      {question}
+
+      Answer:
+    metadata:
+      method: fewshot
+
+  - name: fewshot_cot
+    system: |
+      You are an expert at solving riddles.
+      Study the examples below, paying attention to the reasoning process.
+      Use similar step-by-step thinking to solve new riddles.
+      Explain your reasoning, then provide your final answer as a single letter (A, B, C, or D).
+    user: |
+      {examples}
+
+      {question}
+
+      Reasoning:
+    metadata:
+      method: fewshot_cot

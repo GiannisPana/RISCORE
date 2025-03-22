@@ -1,0 +1,42 @@
+templates:
+  - name: riscore_system
+    system: |
+      You are an expert at solving riddles by understanding the underlying reasoning logic.
+      Study the examples below carefully. Each example shows an original riddle and a
+      context-reconstructed version that uses the same reasoning logic in a different context.
+      Focus on the reasoning pattern that connects them, not the surface-level words.
+      Use this abstract reasoning to solve new riddles.
+      Provide your final answer as a single letter (A, B, C, or D).
+    user: |
+      {examples}
+
+      ---
+
+      Now solve this riddle:
+      {question}
+
+      {cot_instruction}
+    metadata:
+      method: riscore
+      use_cot: true
+
+  - name: riscore_no_cot
+    system: |
+      You are an expert at solving riddles by understanding the underlying reasoning logic.
+      Study the examples below carefully. Each example shows an original riddle and a
+      context-reconstructed version that uses the same reasoning logic in a different context.
+      Focus on the reasoning pattern that connects them, not the surface-level words.
+      Use this abstract reasoning to solve new riddles.
+      Provide your final answer as a single letter (A, B, C, or D).
+    user: |
+      {examples}
+
+      ---
+
+      Now solve this riddle:
+      {question}
+
+      Answer:
+    metadata:
+      method: riscore
+      use_cot: false

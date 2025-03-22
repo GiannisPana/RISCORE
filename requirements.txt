@@ -1,0 +1,37 @@
+# RISCORE Requirements
+
+# Core dependencies
+torch>=2.0.0
+transformers>=4.38.0
+accelerate>=0.27.0
+bitsandbytes>=0.43.0
+datasets>=2.13.0
+sentence-transformers>=2.2.0
+
+# Data processing
+numpy>=1.22.0
+pandas>=1.5.0
+scikit-learn>=1.2.0
+
+# Utilities
+tqdm>=4.65.0
+nltk>=3.8.0
+pyyaml>=6.0
+
+# Hugging Face
+huggingface-hub>=0.16.0
+peft>=0.8.0
+trl>=0.7.0
+
+# API support
+# litellm>=1.0.0
+
+# Validation
+pydantic>=2.0.0
+
+# Environment management
+python-dotenv>=0.19.0
+
+# Optional: For Jupyter notebooks
+jupyter>=1.0.0
+ipywidgets>=8.0.0
