@@ -23,6 +23,7 @@ class RISCOREPrompt(FewShotPrompt):
         self,
         use_cot: bool = True,
         similarity_based_selection: bool = True,
+        num_exemplars: int = 2,
         similarity_threshold: float = 0.4,
         embedding_config: Optional[EmbeddingConfig] = None,
         similarity_config: Optional[SimilarityConfig] = None,
@@ -42,6 +43,7 @@ class RISCOREPrompt(FewShotPrompt):
         """
         self.use_cot = use_cot
         self.similarity_based_selection = similarity_based_selection
+        self.num_exemplars = num_exemplars
         
         # Setup configurations
         if embedding_config is None:
@@ -152,6 +154,18 @@ class RISCOREPrompt(FewShotPrompt):
         if not exemplars:
             # Fall back to standard few-shot if no exemplars
             return super().format_prompt(example)
+
+        num_exemplars = kwargs.get("num_exemplars", self.num_exemplars)
+        if num_exemplars and len(exemplars) > num_exemplars:
+            if self.similarity_based_selection:
+                exemplars = self.find_similar_exemplars(
+                    target_example=example,
+                    candidate_examples=exemplars,
+                    k=num_exemplars,
+                    threshold=kwargs.get("similarity_threshold"),
+                )
+            else:
+                exemplars = exemplars[:num_exemplars]
         
         # Format exemplar pairs
         exemplar_texts = [
@@ -331,7 +345,6 @@ Reconstructed Riddle:"""
             # Fallback to method
             system_prompt = "You are an expert at creating riddles and understanding reasoning patterns."
             user_prompt = self.get_reconstruction_prompt(example)
-        system_prompt = "You are an expert at creating riddles and understanding reasoning patterns."
         
         # Generate reconstruction
         if hasattr(self.model, 'generate_chat'):
@@ -425,6 +438,7 @@ Reconstructed Riddle:"""
                     reconstructed_question=reconstruction["reconstructed_question"],
                     reconstructed_choices=reconstruction["reconstructed_choices"],
                     reconstructed_answer=reconstruction["reconstructed_answer"],
+                    reconstructed_answer_idx=reconstruction["reconstructed_answer_idx"],
                     cot=example.cot,
                     hint=example.hint,
                     explanation=example.explanation,

@@ -1,20 +1,123 @@
-# **RISCORE**:
-*Enhancing In-Context Riddle Solving in Language Models through Context-Reconstructed Example Augmentation*
+# RISCORE: Enhancing In-Context Riddle Solving in Language Models Through Context-Reconstructed Example Augmentation
 
-## Abstract:
-We address the complex challenge of riddle-solving with large language models (LLMs), a task that demands a blend of abstract thinking, creative problem-solving, and diverse reasoning skills. LLMs often struggle in these areas, but our method, **RISCORE**, aims to overcome these limitations by improving in-context riddle-solving performance.
+*A prompting framework for riddle-solving models that need the reasoning pattern, not just similar wording.*
 
-## Key Contributions:
+[![Paper](https://img.shields.io/badge/Paper-COLING%202025-blue)](https://aclanthology.org/2025.coling-main.633/)
+[![PDF](https://img.shields.io/badge/PDF-ACL%20Anthology-red)](https://aclanthology.org/2025.coling-main.633.pdf)
+[![Python](https://img.shields.io/badge/Python-3.8%2B-green)](setup.py)
+[![License](https://img.shields.io/badge/License-MIT-lightgrey)](LICENSE)
 
-- **Novel Prompting Method:**  
-  We introduce **RISCORE** (**RI**ddle **S**olving with **CO**ntext **RE**construction), a unique prompting technique designed to boost LLMs' riddle-solving capabilities. It incorporates an automated pipeline to generate contextually reconstructed multiple-choice riddles, enhancing the model’s understanding and performance.
+[Paper](https://aclanthology.org/2025.coling-main.633/) | [PDF](https://aclanthology.org/2025.coling-main.633.pdf) | [Usage](docs/USAGE.md) | [Data setup](docs/DATA.md) | [Reproducing experiments](docs/REPRODUCING.md) | [Citation](#citation)
 
-- **Improved Reasoning with Context:**  
-  Our experiments demonstrate that providing a riddle along with its context reconstruction significantly enhances performance in both lateral and vertical thinking tasks, facilitating better problem-solving across diverse reasoning challenges.
+---
 
-- **Comprehensive Comparisons:**  
-  RISCORE is rigorously evaluated against a wide range of popular prompting techniques. It consistently outperforms these alternatives across multiple models of varying sizes, showcasing its robustness and versatility.
+<p align="center">
+  <img src="assets/fs-vs-riscore-comparison.svg" alt="Standard few-shot vs RISCORE on the same riddle">
+</p>
 
-## Read the Full Paper:
+---
 
-For a detailed explanation of our approach and findings, check out our paper [**here**](https://aclanthology.org/2025.coling-main.633.pdf).
+## The problem with semantically similar examples
+
+Consider two riddles that look related:
+
+- *"A man shaves every day, yet keeps his beard long."* → **A barber.**
+- *"What has a beard but never needs to shave?"* → **A tree.** ("beard" here is a botanical term — the fringe on a grass spikelet.)
+
+Standard few-shot prompting picks the second riddle as an example for the first because "beard" appears in both. But the reasoning is completely different: one exploits an occupation that mirrors what others do; the other plays on a word's secondary meaning. Feed that example and the model latches onto the shared word, not the trick.
+
+**RISCORE** replaces that semantically similar but reasoning-different example with a *context reconstruction* — a new riddle with different words but the same underlying structure:
+
+*"Tom attends class every day but doesn't do any homework."* → **A teacher.**
+
+Different scenario, same pattern: someone defined by a role that mirrors what the people around them do. Strip the surface similarity, preserve the reasoning structure.
+
+## Results
+
+On **BrainTeaser** (Table 1, 4-shot, RISCOREm vs semantically-similar few-shot):
+
+| Model | FS Sim | RISCOREm | Gain |
+|---|---|---|---|
+| Mistral-7B | 45.8% | 56.7% | **+10.9 pts** |
+| Llama3-70B | 79.2% | **83.3%** | +4.1 pts |
+| Llama3-8B | 71.7% | 74.2% | +2.5 pts |
+| Mistral-8x7B | 68.3% | 70.8% | +2.5 pts |
+| Qwen2-7B | 63.3% | 64.2% | +0.9 pts |
+
+83.3% on Llama3-70B is the highest BrainTeaser score shown in Table 1. RISCOREm beats FS Sim at 4-shot on all five tested models.
+
+On **RiddleSense** (vertical thinking), RISCORE gives generator-dependent evidence: some settings match or improve FS Sim, while others trail it.
+
+![BrainTeaser accuracy at 4-shot — FS Sim vs RISCOREm](assets/riscore-vs-fs-sim-4shot.svg)
+
+## Quickstart
+
+```bash
+pip install -e .
+```
+
+```python
+from riscore import RISCOREPrompt, DatasetLoader, ChatModel, Evaluator
+
+# Full walkthrough with dataset setup and model configuration:
+# docs/USAGE.md
+```
+
+## How it works
+
+Each few-shot exemplar is paired with a context-reconstructed version of itself — same answer logic, different scenario and objects. The model attends to the abstract reasoning pattern shared across both versions rather than surface vocabulary. Reconstructions can be hand-curated (**RISCOREm**, an upper bound on quality) or auto-generated by an LLM (**RISCORE**, the practical variant that does not require ground-truth reconstructed pairs).
+
+![RISCORE method overview](assets/riscore-method-overview.svg)
+
+### Automated reconstruction pipeline
+
+![Context reconstruction pipeline](assets/context-reconstruction-pipeline.svg)
+
+1. **Generate a question–answer pair** — switch the original riddle's context while preserving the answer logic.
+2. **Generate distractors** — produce incorrect answer options appropriate to the new scenario, filtered for plausibility and distinctness.
+3. **Assemble and filter** — shuffle answer positions to remove position bias, apply quality checks, and output the reconstructed multiple-choice riddle.
+
+## Docs
+
+- [Installation and usage](docs/USAGE.md)
+- [Dataset preparation (BrainTeaser, RiddleSense)](docs/DATA.md)
+- [Reproducing paper experiments](docs/REPRODUCING.md)
+- [Runnable examples](examples/README.md)
+
+<details>
+<summary>Repository map</summary>
+
+```text
+riscore/
+  core/         model wrappers for Hugging Face and LiteLLM providers
+  data/         riddle examples, dataset loading, format conversion
+  prompting/    baseline prompts, RISCORE prompts, reconstruction generation
+  evaluation/   prediction records, metrics, result persistence
+  utils/        config, validation, embeddings, helper utilities
+examples/       runnable usage examples
+scripts/        dataset preparation utilities
+docs/           data and reproduction notes
+assets/         figures used by this README
+```
+
+[Package overview](riscore/README.md) | [core](riscore/core/README.md) | [data](riscore/data/README.md) | [prompting](riscore/prompting/README.md) | [evaluation](riscore/evaluation/README.md) | [utils](riscore/utils/README.md)
+
+</details>
+
+## Citation
+
+*Ioannis Panagiotopoulos, Giorgos Filandrianos, Maria Lymperaiou, Giorgos Stamou — AILS Lab, National Technical University of Athens. COLING 2025.*
+
+```bibtex
+@inproceedings{panagiotopoulos2025riscore,
+  title={Riscore: Enhancing in-context riddle solving in language models through context-reconstructed example augmentation},
+  author={Panagiotopoulos, Ioannis and Filandrianos, George and Lymperaiou, Maria and Stamou, Giorgos},
+  booktitle={Proceedings of the 31st International Conference on Computational Linguistics},
+  pages={9431--9455},
+  year={2025}
+}
+```
+
+## License
+
+Code in this repository is released under the MIT License. Dataset use is governed by the upstream BrainTeaser and RiddleSense licenses.

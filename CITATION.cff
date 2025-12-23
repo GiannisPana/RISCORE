@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use RISCORE, please cite the COLING 2025 paper."
+title: "RISCORE: Enhancing In-Context Riddle Solving in Language Models through Context-Reconstructed Example Augmentation"
+authors:
+  - family-names: Panagiotopoulos
+    given-names: Ioannis
+  - family-names: Filandrianos
+    given-names: George
+  - family-names: Lymperaiou
+    given-names: Maria
+  - family-names: Stamou
+    given-names: Giorgos
+year: 2025
+conference:
+  name: "Proceedings of the 31st International Conference on Computational Linguistics"
+start: 9431
+end: 9455
+url: "https://aclanthology.org/2025.coling-main.633/"

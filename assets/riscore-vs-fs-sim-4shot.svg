@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 450" width="840" height="450" font-family="system-ui, -apple-system, sans-serif">
+  <!-- Background -->
+  <rect width="840" height="450" fill="#ffffff"/>
+
+  <!-- Title -->
+  <text x="420" y="28" text-anchor="middle" font-size="14" font-weight="600" fill="#111827">BrainTeaser accuracy at 4-shot — FS Sim vs RISCOREm</text>
+
+  <!-- Horizontal grid lines and Y-axis tick labels -->
+  <line x1="80" y1="350" x2="800" y2="350" stroke="#E5E7EB" stroke-width="1"/>
+  <text x="72" y="354" text-anchor="end" font-size="11" fill="#9CA3AF">0%</text>
+
+  <line x1="80" y1="290" x2="800" y2="290" stroke="#E5E7EB" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="72" y="294" text-anchor="end" font-size="11" fill="#9CA3AF">20%</text>
+
+  <line x1="80" y1="230" x2="800" y2="230" stroke="#E5E7EB" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="72" y="234" text-anchor="end" font-size="11" fill="#9CA3AF">40%</text>
+
+  <line x1="80" y1="170" x2="800" y2="170" stroke="#E5E7EB" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="72" y="174" text-anchor="end" font-size="11" fill="#9CA3AF">60%</text>
+
+  <line x1="80" y1="110" x2="800" y2="110" stroke="#E5E7EB" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="72" y="114" text-anchor="end" font-size="11" fill="#9CA3AF">80%</text>
+
+  <line x1="80" y1="50" x2="800" y2="50" stroke="#E5E7EB" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="72" y="54" text-anchor="end" font-size="11" fill="#9CA3AF">100%</text>
+
+  <!-- Axis lines -->
+  <line x1="80" y1="50" x2="80" y2="350" stroke="#D1D5DB" stroke-width="1"/>
+  <line x1="80" y1="350" x2="800" y2="350" stroke="#D1D5DB" stroke-width="1"/>
+
+  <!-- Y-axis label -->
+  <text x="18" y="200" text-anchor="middle" font-size="12" fill="#6B7280" transform="rotate(-90,18,200)">Accuracy</text>
+
+  <!-- ============================================================
+       Group 0: Llama3-70B  (x offset = 80 + 0*144 = 80)
+       FS Sim 79.2%  → h=237.6 y=112.4
+       RISCOREm 83.3% → h=249.9 y=100.1
+       bar x: FS=104, RC=154  center=152
+  ============================================================ -->
+  <rect x="104" y="112" width="40" height="238" fill="#9CA3AF" rx="2"/>
+  <rect x="154" y="100" width="40" height="250" fill="#3B82F6" rx="2"/>
+  <text x="124" y="107" text-anchor="middle" font-size="10" fill="#6B7280">79.2</text>
+  <text x="174" y="94" text-anchor="middle" font-size="10" font-weight="700" fill="#1D4ED8">83.3</text>
+  <text x="152" y="370" text-anchor="middle" font-size="11" fill="#374151">Llama3-70B</text>
+
+  <!-- ============================================================
+       Group 1: Mistral-8x7B  (x offset = 80 + 144 = 224)
+       FS Sim 68.3% → h=204.9 y=145.1
+       RISCOREm 70.8% → h=212.4 y=137.6
+       bar x: FS=248, RC=298  center=296
+  ============================================================ -->
+  <rect x="248" y="145" width="40" height="205" fill="#9CA3AF" rx="2"/>
+  <rect x="298" y="138" width="40" height="212" fill="#3B82F6" rx="2"/>
+  <text x="268" y="140" text-anchor="middle" font-size="10" fill="#6B7280">68.3</text>
+  <text x="318" y="132" text-anchor="middle" font-size="10" font-weight="700" fill="#1D4ED8">70.8</text>
+  <text x="296" y="370" text-anchor="middle" font-size="11" fill="#374151">Mistral-8x7B</text>
+
+  <!-- ============================================================
+       Group 2: Llama3-8B  (x offset = 80 + 288 = 368)
+       FS Sim 71.7% → h=215.1 y=134.9
+       RISCOREm 74.2% → h=222.6 y=127.4
+       bar x: FS=392, RC=442  center=440
+  ============================================================ -->
+  <rect x="392" y="135" width="40" height="215" fill="#9CA3AF" rx="2"/>
+  <rect x="442" y="127" width="40" height="223" fill="#3B82F6" rx="2"/>
+  <text x="412" y="129" text-anchor="middle" font-size="10" fill="#6B7280">71.7</text>
+  <text x="462" y="121" text-anchor="middle" font-size="10" font-weight="700" fill="#1D4ED8">74.2</text>
+  <text x="440" y="370" text-anchor="middle" font-size="11" fill="#374151">Llama3-8B</text>
+
+  <!-- ============================================================
+       Group 3: Mistral-7B  (x offset = 80 + 432 = 512)
+       FS Sim 45.8% → h=137.4 y=212.6
+       RISCOREm 56.7% → h=170.1 y=179.9
+       bar x: FS=536, RC=586  center=584
+  ============================================================ -->
+  <rect x="536" y="213" width="40" height="137" fill="#9CA3AF" rx="2"/>
+  <rect x="586" y="180" width="40" height="170" fill="#3B82F6" rx="2"/>
+  <text x="556" y="207" text-anchor="middle" font-size="10" fill="#6B7280">45.8</text>
+  <text x="606" y="174" text-anchor="middle" font-size="10" font-weight="700" fill="#1D4ED8">56.7</text>
+  <text x="584" y="370" text-anchor="middle" font-size="11" fill="#374151">Mistral-7B</text>
+
+  <!-- ============================================================
+       Group 4: Qwen2-7B  (x offset = 80 + 576 = 656)
+       FS Sim 63.3% → h=189.9 y=160.1
+       RISCOREm 64.2% → h=192.6 y=157.4
+       bar x: FS=680, RC=730  center=728
+  ============================================================ -->
+  <rect x="680" y="160" width="40" height="190" fill="#9CA3AF" rx="2"/>
+  <rect x="730" y="157" width="40" height="193" fill="#3B82F6" rx="2"/>
+  <text x="700" y="153" text-anchor="middle" font-size="10" fill="#6B7280">63.3</text>
+  <text x="750" y="150" text-anchor="middle" font-size="10" font-weight="700" fill="#1D4ED8">64.2</text>
+  <text x="728" y="370" text-anchor="middle" font-size="11" fill="#374151">Qwen2-7B</text>
+
+  <!-- Legend -->
+  <rect x="296" y="400" width="14" height="14" fill="#9CA3AF" rx="2"/>
+  <text x="316" y="411" font-size="12" fill="#374151">FS Sim (semantically similar few-shot)</text>
+  <rect x="546" y="400" width="14" height="14" fill="#3B82F6" rx="2"/>
+  <text x="566" y="411" font-size="12" fill="#374151">RISCOREm</text>
+  <text x="420" y="434" text-anchor="middle" font-size="10.5" font-style="italic" fill="#9CA3AF">RISCOREm uses 50% less real data — 2 real + 2 generated examples vs 4 real for FS Sim.</text>
+</svg>

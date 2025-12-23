@@ -35,13 +35,16 @@ setup(
     description="RISCORE: RIddle Solving with COntext REconstruction",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    author="RISCORE Team",
+    author="Ioannis Panagiotopoulos, George Filandrianos, Maria Lymperaiou, Giorgos Stamou",
     author_email="",
-    url="https://github.com/yourusername/RISCORE",
+    url="https://github.com/GiannisPana/RISCORE",
     packages=find_packages(exclude=["tests", "prompting", "data", "output", "test_set"]),
     python_requires=">=3.8",
     install_requires=requirements,
     extras_require={
+        "api": [
+            "litellm>=1.0.0",
+        ],
         "dev": [
             "pytest>=7.0.0",
             "pytest-cov>=4.0.0",

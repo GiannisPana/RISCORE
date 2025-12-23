@@ -1,5 +1,9 @@
 """Example script: Run RISCORE evaluation."""
 
+import os
+
+from dotenv import load_dotenv
+
 from riscore import (
     ChatModel,
     BaseModelConfig,
@@ -14,7 +18,10 @@ def main():
     MODEL_NAME = "meta-llama/Meta-Llama-3-8B-Instruct"
     DATASET_TYPE = "SP"  # Sentence Puzzle
     NUM_EXEMPLARS = 2
-    HF_TOKEN = "your_hf_token_here"  # Replace with your token
+    load_dotenv()
+    HF_TOKEN = os.getenv("HF_TOKEN")
+    if not HF_TOKEN:
+        raise RuntimeError("Set HF_TOKEN in your environment or .env file before running this example")
     
     print("=" * 80)
     print("RISCORE Evaluation Example")
