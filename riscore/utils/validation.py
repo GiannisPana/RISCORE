@@ -138,7 +138,7 @@ class PromptConfig(BaseModel):
 class ModelProviderConfig(BaseModel):
     """Configuration for LLM provider."""
     
-    provider: Literal["huggingface", "openai", "anthropic", "litellm"] = Field(
+    provider: Literal["huggingface", "openai", "anthropic", "cohere", "replicate", "google", "litellm"] = Field(
         "huggingface",
         description="Model provider"
     )

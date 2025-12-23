@@ -51,6 +51,7 @@ def create_prompt_strategy(args, model=None):
         embedding_config = EmbeddingConfig(model_name=args.embedding_model)
         return RISCOREPrompt(
             use_cot=args.use_cot,
+            num_exemplars=args.num_exemplars,
             similarity_based_selection=args.similarity_selection,
             similarity_threshold=args.similarity_threshold,
             embedding_config=embedding_config,

@@ -36,12 +36,12 @@ def main():
     
     hf_token = os.getenv("HF_TOKEN")
     if not hf_token:
-        print("⚠️  Warning: HF_TOKEN not found in environment!")
+        print("Warning: HF_TOKEN not found in environment!")
         print("   Please set it in .env file or export HF_TOKEN='your_token'")
         return
     
     model = ChatModel(config, hf_token=hf_token)
-    print("✓ Model loaded successfully!")
+    print("Model loaded successfully!")
     
     # 2. Load small test dataset
     print("\n[2/5] Loading dataset (first 10 examples for quick test)...")
@@ -49,8 +49,8 @@ def main():
     test_dataset.examples = test_dataset.examples[:10]  # Only 10 for testing
     
     train_dataset = DatasetLoader.load_train_dataset(dataset_type="SP")
-    print(f"✓ Loaded {len(test_dataset)} test examples")
-    print(f"✓ Loaded {len(train_dataset)} training examples")
+    print(f"Loaded {len(test_dataset)} test examples")
+    print(f"Loaded {len(train_dataset)} training examples")
     
     # 3. Create RISCORE strategy
     print("\n[3/5] Creating RISCORE strategy...")
@@ -58,7 +58,7 @@ def main():
         use_cot=True,  # Use Chain-of-Thought reasoning
         similarity_based_selection=True  # Select similar examples
     )
-    print("✓ Strategy created")
+    print("Strategy created")
     
     # 4. Run evaluation
     print("\n[4/5] Running evaluation...")
@@ -86,15 +86,15 @@ def main():
     
     # Save results
     evaluator.results_manager.save_results(format="json")
-    print(f"\n✓ Detailed results saved to: output/")
+    print(f"\nDetailed results saved to: output/")
     
     print("\n" + "="*80)
-    print("Test completed successfully! 🎉")
+    print("Test completed successfully!")
     print("="*80)
     print("\nNext steps:")
     print("1. Check results in output/ directory")
     print("2. Try running on full dataset (remove [:10] limit)")
-    print("3. Experiment with different models (see LOCAL_SETUP.md)")
+    print("3. Experiment with different models (see README.md)")
     print("4. Compare with other methods (examples/compare_methods.py)")
 
 if __name__ == "__main__":

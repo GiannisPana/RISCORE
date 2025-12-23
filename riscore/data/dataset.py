@@ -21,6 +21,7 @@ class RiddleExample:
     reconstructed_question: Optional[str] = None
     reconstructed_choices: Optional[List[str]] = None
     reconstructed_answer: Optional[str] = None
+    reconstructed_answer_idx: Optional[int] = None
     cot: Optional[str] = None
     hint: Optional[str] = None
     explanation: Optional[str] = None
@@ -38,6 +39,7 @@ class RiddleExample:
             "reconstructed_question": self.reconstructed_question,
             "reconstructed_choices": self.reconstructed_choices,
             "reconstructed_answer": self.reconstructed_answer,
+            "reconstructed_answer_idx": self.reconstructed_answer_idx,
             "cot": self.cot,
             "hint": self.hint,
             "explanation": self.explanation,
@@ -119,6 +121,7 @@ class RiddleDataset:
                 reconstructed_question=example_dict.get("reconstructed_question"),
                 reconstructed_choices=example_dict.get("reconstructed_choices"),
                 reconstructed_answer=example_dict.get("reconstructed_answer"),
+                reconstructed_answer_idx=example_dict.get("reconstructed_answer_idx"),
                 cot=example_dict.get("cot"),
                 hint=example_dict.get("hint"),
                 explanation=example_dict.get("explanation"),
@@ -159,6 +162,11 @@ class RiddleDataset:
                 riddle_id=row.get("riddle_id"),
                 category=row.get("category"),
                 reconstructed_question=row.get("reconstructed_question"),
+                reconstructed_answer_idx=(
+                    int(row.get("reconstructed_answer_idx"))
+                    if "reconstructed_answer_idx" in row and pd.notna(row.get("reconstructed_answer_idx"))
+                    else None
+                ),
                 cot=row.get("cot"),
                 hint=row.get("hint"),
                 explanation=row.get("explanation"),
@@ -201,6 +209,7 @@ class RiddleDataset:
                 "riddle_id": example.riddle_id,
                 "category": example.category,
                 "reconstructed_question": example.reconstructed_question,
+                "reconstructed_answer_idx": example.reconstructed_answer_idx,
                 "cot": example.cot,
                 "hint": example.hint,
                 "explanation": example.explanation,

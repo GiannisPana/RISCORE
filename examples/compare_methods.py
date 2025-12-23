@@ -1,5 +1,10 @@
 """Example script: Compare different prompting methods."""
 
+import os
+import random
+
+from dotenv import load_dotenv
+
 from riscore import (
     ChatModel,
     BaseModelConfig,
@@ -12,7 +17,6 @@ from riscore import (
     Evaluator,
     ResultsManager,
 )
-import random
 
 def evaluate_method(model, method_name, prompt_strategy, test_dataset, exemplars=None):
     """Evaluate a single prompting method."""
@@ -44,7 +48,10 @@ def main():
     MODEL_NAME = "meta-llama/Meta-Llama-3-8B-Instruct"
     DATASET_TYPE = "SP"
     NUM_EXEMPLARS = 2
-    HF_TOKEN = "your_hf_token_here"
+    load_dotenv()
+    HF_TOKEN = os.getenv("HF_TOKEN")
+    if not HF_TOKEN:
+        raise RuntimeError("Set HF_TOKEN in your environment or .env file before running this example")
     NUM_TEST_EXAMPLES = 20  # Use small number for demo
     
     print("=" * 80)

@@ -264,6 +264,37 @@ class UnifiedModelInterface:
         self.model = None
         
         self._initialize_model()
+
+    @classmethod
+    def create(
+        cls,
+        model_name: str,
+        provider: str = "huggingface",
+        api_key: Optional[str] = None,
+        api_base: Optional[str] = None,
+        organization: Optional[str] = None,
+        **kwargs,
+    ) -> "UnifiedModelInterface":
+        """Create a unified model interface from simple provider arguments."""
+        model_config_keys = {"quantization", "load_in_4bit", "load_in_8bit"}
+        generation_config_keys = set(GenerationConfig.model_fields)
+
+        model_config_kwargs = {key: kwargs.pop(key) for key in list(kwargs) if key in model_config_keys}
+        generation_kwargs = {key: kwargs.pop(key) for key in list(kwargs) if key in generation_config_keys}
+
+        if "max_tokens" in kwargs:
+            generation_kwargs["max_new_tokens"] = kwargs.pop("max_tokens")
+
+        config = ModelProviderConfig(
+            provider=provider,
+            model_name=model_name,
+            api_key=api_key,
+            api_base=api_base,
+            organization=organization,
+            **model_config_kwargs,
+        )
+        generation_config = GenerationConfig(**generation_kwargs)
+        return cls(config=config, generation_config=generation_config)
     
     def _initialize_model(self):
         """Initialize the appropriate model backend."""
@@ -280,7 +311,7 @@ class UnifiedModelInterface:
             
             self.model = ChatModel(hf_config, hf_token=self.config.api_key)
         
-        elif self.config.provider in ["openai", "anthropic", "litellm"]:
+        elif self.config.provider in ["openai", "anthropic", "cohere", "replicate", "google", "litellm"]:
             # Use LiteLLM for API providers
             self.model = LiteLLMModel(self.config, self.generation_config)
         

@@ -1,287 +1,102 @@
-"""
-Example: Using RISCORE with API Models (OpenAI, Anthropic, etc.)
+"""Run RISCORE with local or API-backed models.
 
-This example shows how to use the UnifiedModelInterface to seamlessly work with
-both local Hugging Face models and API-based models via LiteLLM.
+Examples:
+    python examples/run_with_api_models.py --provider openai --model gpt-4o-mini
+    python examples/run_with_api_models.py --provider anthropic --model claude-3-5-sonnet-20241022
+    python examples/run_with_api_models.py --provider huggingface --model meta-llama/Meta-Llama-3-8B-Instruct
 """
 
+from __future__ import annotations
+
+import argparse
 import os
-from pathlib import Path
-import sys
-
-# Add riscore to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from riscore.core import UnifiedModelInterface
 from riscore.data import DatasetLoader
+from riscore.evaluation import Evaluator, ResultsManager
 from riscore.prompting import RISCOREPrompt
-from riscore.evaluation import EvaluationMetrics
-from riscore.utils import ConfigManager
 
 
-def run_with_openai():
-    """Run RISCORE with OpenAI GPT models."""
-    # Ensure API key is set
-    if not os.getenv("OPENAI_API_KEY"):
-        print("Please set OPENAI_API_KEY environment variable")
-        return
-    
-    print("Running RISCORE with OpenAI GPT-4...")
-    
-    # Create model interface - automatically uses LiteLLM for API models
+def get_api_key(provider: str) -> str | None:
+    """Return the conventional environment variable for a provider."""
+    env_names = {
+        "openai": "OPENAI_API_KEY",
+        "anthropic": "ANTHROPIC_API_KEY",
+        "cohere": "COHERE_API_KEY",
+        "replicate": "REPLICATE_API_TOKEN",
+        "huggingface": "HF_TOKEN",
+    }
+    name = env_names.get(provider)
+    return os.getenv(name) if name else None
+
+
+def run(args: argparse.Namespace) -> None:
+    """Run a small RISCORE evaluation with the requested provider."""
     model = UnifiedModelInterface.create(
-        model_name="gpt-4-turbo-preview",
-        provider="openai"
+        provider=args.provider,
+        model_name=args.model,
+        api_key=args.api_key or get_api_key(args.provider),
+        temperature=args.temperature,
+        max_tokens=args.max_tokens,
+        quantization=args.quantization,
+        load_in_4bit=args.load_in_4bit,
     )
-    
-    # Load dataset
-    data_dir = Path(__file__).parent.parent / "data"
-    loader = DatasetLoader(data_dir)
-    test_data = loader.load_dataset("SP_new_test.npy", limit=10)
-    
-    # Create RISCORE with template loading and embedding caching
-    riscore = RISCOREPrompt(
-        model=model,
-        embedding_model_name="sentence-transformers/all-MiniLM-L6-v2",
-        cache_dir=data_dir / "cache",  # Embeddings will be saved here
-        use_templates=True,  # Load prompts from YAML templates
+
+    train_dataset = DatasetLoader.load_train_dataset(args.dataset_type, args.data_dir)
+    test_dataset = DatasetLoader.load_test_dataset(args.dataset_type, args.data_dir)
+    if args.max_examples:
+        test_dataset.examples = test_dataset.examples[: args.max_examples]
+
+    prompt_strategy = RISCOREPrompt(
+        use_cot=not args.no_cot,
+        num_exemplars=args.num_exemplars,
+        similarity_based_selection=not args.no_similarity,
     )
-    
-    # Evaluate
-    results = riscore.evaluate(test_data)
-    
-    # Calculate metrics
-    metrics = EvaluationMetrics.from_results(results)
-    print(f"\nAccuracy: {metrics.accuracy:.2%}")
-    print(f"Average confidence: {metrics.confidence_mean:.2f}")
-    
-    # Save results
-    output_dir = Path(__file__).parent.parent / "output"
-    output_dir.mkdir(exist_ok=True)
-    metrics.save(output_dir / "openai_results.json")
 
-
-def run_with_anthropic():
-    """Run RISCORE with Anthropic Claude models."""
-    # Ensure API key is set
-    if not os.getenv("ANTHROPIC_API_KEY"):
-        print("Please set ANTHROPIC_API_KEY environment variable")
-        return
-    
-    print("Running RISCORE with Claude 3...")
-    
-    # Create model interface
-    model = UnifiedModelInterface.create(
-        model_name="claude-3-opus-20240229",
-        provider="anthropic"
+    results_manager = ResultsManager(output_dir=args.output_dir)
+    results_manager.set_metadata(
+        provider=args.provider,
+        model_name=args.model,
+        method="riscore",
+        dataset_type=args.dataset_type,
+        num_exemplars=args.num_exemplars,
     )
-    
-    # Load dataset
-    data_dir = Path(__file__).parent.parent / "data"
-    loader = DatasetLoader(data_dir)
-    test_data = loader.load_dataset("WP_new_test.npy", limit=10)
-    
-    # Create RISCORE with caching
-    riscore = RISCOREPrompt(
-        model=model,
-        embedding_model_name="sentence-transformers/all-mpnet-base-v2",
-        cache_dir=data_dir / "cache",
-        use_templates=True,
+
+    evaluator = Evaluator(model=model, prompt_strategy=prompt_strategy, results_manager=results_manager)
+    evaluator.evaluate(
+        dataset=test_dataset,
+        exemplars=train_dataset.examples,
+        verbose=True,
+        model_type=args.model_type,
+        temperature=args.temperature,
+        max_new_tokens=args.max_tokens,
     )
-    
-    # Evaluate
-    results = riscore.evaluate(test_data)
-    
-    # Calculate metrics
-    metrics = EvaluationMetrics.from_results(results)
-    print(f"\nAccuracy: {metrics.accuracy:.2%}")
-    
-    # Save results
-    output_dir = Path(__file__).parent.parent / "output"
-    output_dir.mkdir(exist_ok=True)
-    metrics.save(output_dir / "anthropic_results.json")
+
+    output_file = results_manager.save_results(format="json")
+    results_manager.print_summary()
+    print(f"Saved results to {output_file}")
 
 
-def run_with_local_model():
-    """Run RISCORE with local Hugging Face model for comparison."""
-    print("Running RISCORE with local model...")
-    
-    # Create model interface - automatically uses HF pipeline
-    model = UnifiedModelInterface.create(
-        model_name="meta-llama/Meta-Llama-3-8B-Instruct",
-        provider="huggingface",
-        device_map="auto",
-        load_in_4bit=True,  # Quantization for efficiency
-    )
-    
-    # Load dataset
-    data_dir = Path(__file__).parent.parent / "data"
-    loader = DatasetLoader(data_dir)
-    test_data = loader.load_dataset("SP_new_test.npy", limit=10)
-    
-    # Create RISCORE - embeddings will be cached and reused
-    riscore = RISCOREPrompt(
-        model=model,
-        embedding_model_name="sentence-transformers/all-MiniLM-L6-v2",
-        cache_dir=data_dir / "cache",
-        use_templates=True,
-    )
-    
-    # Evaluate
-    results = riscore.evaluate(test_data)
-    
-    # Calculate metrics
-    metrics = EvaluationMetrics.from_results(results)
-    print(f"\nAccuracy: {metrics.accuracy:.2%}")
-    
-    # Save results
-    output_dir = Path(__file__).parent.parent / "output"
-    output_dir.mkdir(exist_ok=True)
-    metrics.save(output_dir / "local_results.json")
-
-
-def compare_all_models():
-    """Compare results across different model providers."""
-    print("Comparing all model providers...\n")
-    
-    all_results = {}
-    
-    # Try each provider
-    providers = [
-        ("Local (Llama-3-8B)", run_with_local_model),
-    ]
-    
-    # Only add API providers if keys are available
-    if os.getenv("OPENAI_API_KEY"):
-        providers.append(("OpenAI (GPT-4)", run_with_openai))
-    
-    if os.getenv("ANTHROPIC_API_KEY"):
-        providers.append(("Anthropic (Claude-3)", run_with_anthropic))
-    
-    for name, func in providers:
-        print(f"\n{'='*50}")
-        print(f"Running: {name}")
-        print('='*50)
-        try:
-            func()
-            all_results[name] = "✓ Success"
-        except Exception as e:
-            all_results[name] = f"✗ Failed: {str(e)}"
-            print(f"Error: {e}")
-    
-    # Summary
-    print(f"\n{'='*50}")
-    print("Summary")
-    print('='*50)
-    for name, status in all_results.items():
-        print(f"{name}: {status}")
-
-
-def customize_templates():
-    """Show how to customize prompt templates."""
-    print("Customizing prompt templates...")
-    
-    from riscore.prompting import PromptTemplateManager
-    
-    # Load template manager
-    template_dir = Path(__file__).parent.parent / "riscore" / "prompting" / "templates"
-    manager = PromptTemplateManager(template_dir)
-    
-    # Load and view RISCORE template
-    riscore_template = manager.get_template("riscore")
-    print(f"\nRISCORE Template Name: {riscore_template.name}")
-    print(f"Description: {riscore_template.description}")
-    print(f"\nSystem Prompt:\n{riscore_template.system_prompt[:200]}...")
-    
-    # Create custom template
-    custom_template = manager.get_template("riscore")
-    custom_template.system_prompt = "You are an expert riddle solver with deep reasoning abilities."
-    
-    # Use custom template
-    model = UnifiedModelInterface.create(
-        model_name="gpt-3.5-turbo",
-        provider="openai"
-    )
-    
-    riscore = RISCOREPrompt(
-        model=model,
-        use_templates=False,  # Will use default, but can override
-    )
-    
-    # Override system prompt
-    riscore.system_prompt = custom_template.system_prompt
-    
-    print("\nCustom template applied successfully!")
-
-
-def check_embedding_cache():
-    """Check and manage embedding cache."""
-    print("Checking embedding cache...")
-    
-    from riscore.utils import EmbeddingManager
-    
-    data_dir = Path(__file__).parent.parent / "data"
-    cache_dir = data_dir / "cache"
-    
-    # Create embedding manager
-    manager = EmbeddingManager(
-        model_name="sentence-transformers/all-MiniLM-L6-v2",
-        cache_dir=cache_dir
-    )
-    
-    # Check cache stats
-    cache_file = cache_dir / "embeddings.pkl"
-    if cache_file.exists():
-        manager.load()
-        print(f"\nCache loaded from: {cache_file}")
-        print(f"Cached embeddings: {len(manager.cache.cache)}")
-        
-        # Show memory usage
-        import sys
-        cache_size = sys.getsizeof(manager.cache.cache)
-        print(f"Memory usage: {cache_size / 1024:.2f} KB")
-    else:
-        print(f"\nNo cache found at: {cache_file}")
-        print("Cache will be created on first run")
-    
-    # Example: pre-compute embeddings for dataset
-    loader = DatasetLoader(data_dir)
-    train_data = loader.load_dataset("SP-train.npy", limit=100)
-    
-    print(f"\nPre-computing embeddings for {len(train_data)} samples...")
-    
-    texts = [item["question"] for item in train_data]
-    embeddings = manager.encode(texts, show_progress=True)
-    
-    print(f"Computed {len(embeddings)} embeddings")
-    
-    # Save cache
-    manager.save()
-    print(f"Cache saved to: {cache_file}")
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Run RISCORE with local or API-backed models.")
+    parser.add_argument("--provider", default="openai", choices=["huggingface", "openai", "anthropic", "cohere", "replicate", "google", "litellm"])
+    parser.add_argument("--model", default="gpt-4o-mini", help="Provider-specific model name")
+    parser.add_argument("--api-key", help="Optional API key; defaults to provider environment variable")
+    parser.add_argument("--dataset-type", default="SP", choices=["SP", "WP"])
+    parser.add_argument("--data-dir", default="data")
+    parser.add_argument("--output-dir", default="output/api_model")
+    parser.add_argument("--max-examples", type=int, default=10)
+    parser.add_argument("--num-exemplars", type=int, default=2)
+    parser.add_argument("--temperature", type=float, default=0.5)
+    parser.add_argument("--max-tokens", type=int, default=700)
+    parser.add_argument("--model-type", default="llama3", help="Chat template for local Hugging Face models")
+    parser.add_argument("--no-cot", action="store_true")
+    parser.add_argument("--no-similarity", action="store_true")
+    parser.add_argument("--quantization", action="store_true", default=True)
+    parser.add_argument("--no-quantization", dest="quantization", action="store_false")
+    parser.add_argument("--load-in-4bit", action="store_true", default=True)
+    return parser.parse_args()
 
 
 if __name__ == "__main__":
-    import argparse
-    
-    parser = argparse.ArgumentParser(description="RISCORE API Models Example")
-    parser.add_argument(
-        "--mode",
-        choices=["openai", "anthropic", "local", "compare", "templates", "cache"],
-        default="compare",
-        help="Which example to run"
-    )
-    
-    args = parser.parse_args()
-    
-    if args.mode == "openai":
-        run_with_openai()
-    elif args.mode == "anthropic":
-        run_with_anthropic()
-    elif args.mode == "local":
-        run_with_local_model()
-    elif args.mode == "compare":
-        compare_all_models()
-    elif args.mode == "templates":
-        customize_templates()
-    elif args.mode == "cache":
-        check_embedding_cache()
+    run(parse_args())
